@@ -5,8 +5,10 @@ AB=ab.upper()
 alphabet=ab+AB
 digits='0123456789'
 hexdigits=digits+'abcdefABCDEF'
-opchar='~!%^&*-+=[];:()|/?'
-anychar=alphabet+digits+opchar+' \t\n'
+opchar='~!%^&*-+=[];:()|/?.<>'
+otherchar='$'
+filechar=alphabet+digits+opchar+otherchar+' '
+anychar=alphabet+digits+opchar+otherchar+' \t\n'
 
 alpha=either(alphabet)
 alphanum=either(AB+ab+digits)
@@ -17,13 +19,21 @@ ident=cat(alpha, anytimes(alphanum))
 num=many(digit)
 hexnum=cats([match('0'),either('xX'),many(hexdigit)])
 op=either(opchar)
-comment=cats([matches('/*'),mintimes(either(anychar)),matches('*/')])
-ws=anytimes(alt(matches('\\\n'),either(' \t')))
+comment=cat(matches('/*'),mintimes(either(anychar)),matches('*/'))
+sws=anytimes(either(' \t'))
+ws=cut(anytimes(alt(match('\n'),sws)))
 nl=match('\n')
 hashe=match('#')
+filename=mintimes(either(filechar))
+includefile=alt(cat(match('"'),filename,match('"')),cat(match('<'),filename,match('>')))
+hashcommands=cat(matches('include'),sws,includefile,sws,nl)
+hashcommand=cat(match('#'),sws,hashcommands)
 
 # >>> from parle import *
 # >>> from lexer import *
+# >>> pall(maybe(match('x'))(''))
+# [[]]
+# >>> 
 # >>> pall(comment('/* abc */ 456 */'))
 # [['/', '*', ' ', 'a', 'b', 'c', ' ', '*', '/'], ['/', '*', ' ', 'a', 'b', 'c', ' ', '*', '/', ' ', '4', '5', '6', ' ', '*', '/']]
 # >>> pone(ident('abc1+abc'))
@@ -37,7 +47,7 @@ hashe=match('#')
 # >>> pone(ws('   '))
 # [' ', ' ', ' ']
 # >>> pone(ws('   \n  1'))
-# [' ', ' ', ' ']
+# [' ', ' ', ' ', '\n', ' ', ' ']
 # >>> pone(nl('\n  1'))
 # ['\n']
 # >>> pone(hexnum('0xABC1g'))
