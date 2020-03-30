@@ -5,8 +5,8 @@ AB=ab.upper()
 alphabet=ab+AB
 digits='0123456789'
 hexdigits=digits+'abcdefABCDEF'
-opchar='~!%^&*-+=[];:()|/?.<>'
-otherchar='$'
+opchar='~!%^&*-+=[];:|/?.<>'
+otherchar='$(),'
 filechar=alphabet+digits+opchar+otherchar+' '
 anychar=alphabet+digits+opchar+otherchar+' \t\n'
 
@@ -28,6 +28,8 @@ filename=mintimes(either(filechar))
 includefile=alt(cat(match('"'),filename,match('"')),cat(match('<'),filename,match('>')))
 hashcommands=cat(matches('include'),sws,includefile,sws,nl)
 hashcommand=cat(match('#'),sws,hashcommands)
+token=alt(ident,ws,op)
+ppexpr=cat(ident,sws,match('('),anysep(anytimes(token),match(',')),match(')'))
 
 # >>> from parle import *
 # >>> from lexer import *
@@ -52,4 +54,9 @@ hashcommand=cat(match('#'),sws,hashcommands)
 # ['\n']
 # >>> pone(hexnum('0xABC1g'))
 # ['0', 'x', 'A', 'B', 'C', '1']
+# >>> numlist=manysep(many(digit),match(','))
+# >>> numlist('123,456,7')
+# <generator object cat.<locals>.cat at 0xb6458d70>
+# >>> pone(_)
+# ['1', '2', '3', ',', '4', '5', '6', ',', '7']
 # >>> 
